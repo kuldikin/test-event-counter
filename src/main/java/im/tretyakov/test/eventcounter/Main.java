@@ -29,7 +29,7 @@ public class Main {
             System.out.println("[Cyclic] Events by last minute: " + eventCounterCyclic.eventsByLastMinute());
             System.out.println("[Cyclic] Events by last hour: " + eventCounterCyclic.eventsByLastHour());
             System.out.println("[Cyclic] Events by last day: " + eventCounterCyclic.eventsByLastDay());
-            System.out.printf("[Cyclic] Elapsed time: %d seconds", (System.currentTimeMillis() - start) / 1000L);
+            System.out.printf("[Cyclic] Elapsed time: %d seconds\n", (System.currentTimeMillis() - start) / 1000L);
         }
         {
             start = System.currentTimeMillis();
@@ -40,7 +40,7 @@ public class Main {
             System.out.println("[Simple] Events by last minute: " + eventCounterSimple.eventsByLastMinute());
             System.out.println("[Simple] Events by last hour: " + eventCounterSimple.eventsByLastHour());
             System.out.println("[Simple] Events by last day: " + eventCounterSimple.eventsByLastDay());
-            System.out.printf("[Simple] Elapsed time: %d seconds", (System.currentTimeMillis() - start) / 1000L);
+            System.out.printf("[Simple] Elapsed time: %d seconds\n", (System.currentTimeMillis() - start) / 1000L);
         }
     }
 }

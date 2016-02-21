@@ -13,8 +13,8 @@ public class EventCounterCyclicBufferImplTest extends TestCase {
     public void testCountEvent() throws Exception {
         final EventCounter eventCounter = new EventCounterCyclicBufferImpl();
         for (int i = 0; i < 620; i++) {
-            Thread.sleep(100L);
             eventCounter.countEvent();
+            Thread.sleep(100L);
         }
         assertEquals(620, eventCounter.eventsByLastDay());
         assertEquals(620, eventCounter.eventsByLastHour());

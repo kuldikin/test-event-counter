@@ -18,16 +18,16 @@ public class EventCounterCyclicBufferImplTest extends TestCase {
         }
         assertEquals(620, eventCounter.eventsByLastDay());
         assertEquals(620, eventCounter.eventsByLastHour());
-        assertEquals(600, eventCounter.eventsByLastMinute(), 10);
+        assertEquals(585, eventCounter.eventsByLastMinute(), 15);
     }
 
     public void testEventsByLastMinute() throws Exception {
         final EventCounter eventCounter = new EventCounterCyclicBufferImpl();
         for (int i = 0; i < 620; i++) {
-            Thread.sleep(100L);
             eventCounter.countEvent();
+            Thread.sleep(100L);
         }
-        assertEquals(600, eventCounter.eventsByLastMinute(), 10);
+        assertEquals(585, eventCounter.eventsByLastMinute(), 15);
     }
 
     public void testEventsByLastHour() throws Exception {

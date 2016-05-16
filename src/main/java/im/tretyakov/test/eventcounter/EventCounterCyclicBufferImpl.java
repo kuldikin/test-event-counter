@@ -23,7 +23,7 @@ public class EventCounterCyclicBufferImpl implements EventCounter {
 
     private volatile long lastDayHours;
 
-    private Clock clock;
+    private final Clock clock;
 
     public EventCounterCyclicBufferImpl(Clock clock) {
         this.clock = clock;

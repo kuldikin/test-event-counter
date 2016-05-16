@@ -18,7 +18,7 @@ import java.util.concurrent.ConcurrentMap;
  */
 public class EventCounterStreamImpl implements EventCounter {
 
-    private Clock clock;
+    private final Clock clock;
 
     public EventCounterStreamImpl(Clock clock) {
         this.clock = clock;

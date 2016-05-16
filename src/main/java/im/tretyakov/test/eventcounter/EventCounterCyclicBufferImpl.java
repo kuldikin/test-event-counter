@@ -1,8 +1,9 @@
 package im.tretyakov.test.eventcounter;
 
+import com.kuldikin.test.eventcounter.Clock;
+
 /**
- * Реализация интерфейса для учета однотипных событий в системе
- * с использованием кольцевых буферов.
+ * Реализация интерфейса для учета однотипных событий в системе с использованием кольцевых буферов.
  * <p>
  * Данная реализация обеспечивает регистрацию более 8.000.000 событий в секунду при одном поставщике.
  * <p>
@@ -20,41 +21,55 @@ public class EventCounterCyclicBufferImpl implements EventCounter {
 
     private volatile int eventsPointer = 0;
 
-    private volatile long lastDayHours = System.currentTimeMillis() / MILLIS_IN_DAY;
+    private volatile long lastDayHours;
+
+    private Clock clock;
+
+    public EventCounterCyclicBufferImpl(Clock clock) {
+        this.clock = clock;
+        this.lastDayHours = clock.getTime() / MILLIS_IN_DAY;
+    }
+
+    public EventCounterCyclicBufferImpl() {
+        this(Clock.defaultClock());
+    }
 
     /**
      * Учитывает событие
      */
     @Override
     public synchronized void countEvent() {
-        final long millis = System.currentTimeMillis();
-        final long currentDayHours = millis / MILLIS_IN_DAY;
-        final int currentIndex = (int) (millis / MILLIS_IN_SECOND) % 86400;
+        final long millis = clock.getTime();
+        final long currentDayHours = millis / MILLIS_IN_DAY;//кол-во дней прош. от 1970
+        final int currentIndex = (int) (millis / MILLIS_IN_SECOND) % 86400;//секунда в дне 0-86399
         if (currentDayHours == this.lastDayHours) {
+            //если пред. событие было в этот день
             if (currentIndex == this.eventsPointer) {
+                //если пред. событие было в эту же сек.
                 this.events[currentIndex]++;
             } else {
                 if (currentIndex < this.eventsPointer) {
                     System.arraycopy(
-                        new long[this.eventsPointer - currentIndex],
-                        0,
-                        this.events,
-                        currentIndex,
-                        this.eventsPointer - currentIndex
+                            new long[this.eventsPointer - currentIndex],
+                            0,
+                            this.events,
+                            currentIndex,
+                            this.eventsPointer - currentIndex
                     );
                 }
                 this.events[currentIndex] = 1L;
                 this.eventsPointer = currentIndex;
             }
         } else if (currentDayHours == this.lastDayHours + 1) {
+            //если пред. событие было вчера
             if (currentIndex == this.eventsPointer) {
                 System.arraycopy(new long[86400], 0, this.events, 0, 86400);
             } else if (currentIndex < this.eventsPointer) {
                 System.arraycopy(
-                    new long[this.eventsPointer - currentIndex],
-                    0,
-                    this.events,
-                    currentIndex, this.eventsPointer - currentIndex
+                        new long[this.eventsPointer - currentIndex],
+                        0,
+                        this.events,
+                        currentIndex, this.eventsPointer - currentIndex
                 );
             } else {
                 System.arraycopy(new long[86400 - currentIndex], 0, this.events, currentIndex, 86400 - currentIndex);
@@ -76,7 +91,7 @@ public class EventCounterCyclicBufferImpl implements EventCounter {
      */
     @Override
     public long eventsByLastMinute() {
-        final long millis = System.currentTimeMillis();
+        final long millis = clock.getTime();
         final long[] seconds = new long[60];
         final long dayHours = millis / MILLIS_IN_DAY;
         final int currentPointer = (int) ((millis / MILLIS_IN_SECOND) % 86400);
@@ -106,7 +121,7 @@ public class EventCounterCyclicBufferImpl implements EventCounter {
      */
     @Override
     public long eventsByLastHour() {
-        final long millis = System.currentTimeMillis();
+        final long millis = clock.getTime();
         final long[] minutes = new long[3600];
         final long dayHours = millis / MILLIS_IN_DAY;
         final int currentPointer = (int) ((millis / MILLIS_IN_SECOND) % 86400);
@@ -136,7 +151,7 @@ public class EventCounterCyclicBufferImpl implements EventCounter {
      */
     @Override
     public long eventsByLastDay() {
-        final long millis = System.currentTimeMillis();
+        final long millis = clock.getTime();
         final long[] hours = new long[86400];
         final long dayHours = millis / MILLIS_IN_DAY;
         synchronized (this.events) {

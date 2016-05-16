@@ -41,7 +41,7 @@ public abstract class Clock {
      */
     public static class CustomizableClock extends Clock {
 
-        private volatile long time;
+        private long time;
 
         public CustomizableClock(long time) {
             this.time = time;

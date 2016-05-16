@@ -31,9 +31,9 @@ public class ClockTest {
 
         ExecutorService es = Executors.newFixedThreadPool(10);
 
-        for (int i = 0; i < 10; i++) {
+        for (int i = 0; i < 1000; i++) {
             es.submit(() -> {
-                for (int i1 = 0; i1 < 1000; i1++) {
+                for (int i1 = 0; i1 < 10; i1++) {
                     clock.incClock(1000L);
                 }
             });

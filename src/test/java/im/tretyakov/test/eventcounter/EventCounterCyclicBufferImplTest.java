@@ -11,23 +11,25 @@ import junit.framework.TestCase;
 public class EventCounterCyclicBufferImplTest extends TestCase {
 
     public void testCountEvent() throws Exception {
-        final EventCounter eventCounter = new EventCounterCyclicBufferImpl();
+        final Clock.CustomizableClock clock = new Clock.CustomizableClock();
+        final EventCounter eventCounter = new EventCounterCyclicBufferImpl(clock);
         for (int i = 0; i < 620; i++) {
             eventCounter.countEvent();
-            Thread.sleep(100L);
+            clock.incClock(100L);
         }
         assertEquals(620, eventCounter.eventsByLastDay());
         assertEquals(620, eventCounter.eventsByLastHour());
-        assertEquals(585, eventCounter.eventsByLastMinute(), 15);
+        assertEquals(600, eventCounter.eventsByLastMinute());
     }
 
     public void testEventsByLastMinute() throws Exception {
-        final EventCounter eventCounter = new EventCounterCyclicBufferImpl();
+        final Clock.CustomizableClock clock = new Clock.CustomizableClock();
+        final EventCounter eventCounter = new EventCounterCyclicBufferImpl(clock);
         for (int i = 0; i < 620; i++) {
             eventCounter.countEvent();
-            Thread.sleep(100L);
+            clock.incClock(100L);
         }
-        assertEquals(585, eventCounter.eventsByLastMinute(), 15);
+        assertEquals(600, eventCounter.eventsByLastMinute());
     }
 
     public void testEventsByLastHour() throws Exception {
@@ -47,15 +49,16 @@ public class EventCounterCyclicBufferImplTest extends TestCase {
     }
 
     public void testEventsInMinuteTwoMinutes() throws Exception {
-        final EventCounter eventCounter = new EventCounterCyclicBufferImpl();
+        final Clock.CustomizableClock clock = new Clock.CustomizableClock();
+        final EventCounter eventCounter = new EventCounterCyclicBufferImpl(clock);
         Thread.sleep(1000L);
         eventCounter.countEvent();
         assertEquals("Через 1 секунду", 1, eventCounter.eventsByLastMinute());
-        Thread.sleep(56_000L);
+        clock.incClock(56_000L);
         eventCounter.countEvent();
         eventCounter.countEvent();
         assertEquals("Через 57 секунд", 3, eventCounter.eventsByLastMinute());
-        Thread.sleep(5_000L);
+        clock.incClock(5_000L);
         assertEquals("Через 1 минуту и 2 секунды (нет значения старше 60 секунд)", 2, eventCounter.eventsByLastMinute());
         eventCounter.countEvent();
         assertEquals("Через 1 минуту и 2 секунды (нет значения старше 60 секунд, ещё одно событие)", 3, eventCounter.eventsByLastMinute());
@@ -63,7 +66,7 @@ public class EventCounterCyclicBufferImplTest extends TestCase {
 
     public void testFullDay() throws Exception {
         Clock.CustomizableClock clock = new Clock.CustomizableClock();
-        final EventCounterCyclicBufferImpl eventCounter = new EventCounterCyclicBufferImpl(clock);
+        final EventCounter eventCounter = new EventCounterCyclicBufferImpl(clock);
 
         eventCounter.countEvent();
         eventCounter.countEvent();
@@ -96,7 +99,7 @@ public class EventCounterCyclicBufferImplTest extends TestCase {
         assertEquals("Через 1 час", 4, eventCounter.eventsByLastMinute());
         assertEquals("Через 1 час", 4, eventCounter.eventsByLastHour());
         assertEquals("Через 1 час", 9, eventCounter.eventsByLastDay());
-        
+
         clock.incClock(1000L * 60L * 60L * 24L);
         eventCounter.countEvent();
         assertEquals("Через 1 день", 1, eventCounter.eventsByLastMinute());

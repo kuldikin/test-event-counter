@@ -18,6 +18,11 @@ import java.util.concurrent.ConcurrentMap;
  */
 public class EventCounterStreamImpl implements EventCounter {
 
+    private static final long MILLIS_IN_SECOND = 1000L;
+    private static final int SECONDS_IN_MINUTE = 60;
+    private static final int SECONDS_IN_HOUR = SECONDS_IN_MINUTE * 60;
+    private static final int SECONDS_IN_DAY = 24 * SECONDS_IN_HOUR;
+
     private final Clock clock;
 
     public EventCounterStreamImpl(Clock clock) {
@@ -34,10 +39,10 @@ public class EventCounterStreamImpl implements EventCounter {
     /**
      * Учитывает событие
      */
-    public synchronized void countEvent() {
-        final long currentSecond = clock.getTime() / 1000L;
+    public void countEvent() {
+        final long currentSecond = clock.getTime() / MILLIS_IN_SECOND;
         this.events.merge(currentSecond, 1L, (a, b) -> a + b);
-        this.events.entrySet().removeIf(entry -> entry.getKey() > currentSecond + 86400);
+        this.events.entrySet().removeIf(entry -> entry.getKey() > currentSecond + SECONDS_IN_DAY);
     }
 
     /**
@@ -47,7 +52,7 @@ public class EventCounterStreamImpl implements EventCounter {
      */
     public long eventsByLastMinute() {
         return this.events.entrySet().stream().filter(
-                entry -> entry.getKey() >= clock.getTime() / 1000L - 60
+                entry -> entry.getKey() >= clock.getTime() / MILLIS_IN_SECOND - (SECONDS_IN_MINUTE - 1)
         ).mapToLong(Map.Entry::getValue).reduce(0, (a, b) -> a + b);
     }
 
@@ -58,7 +63,7 @@ public class EventCounterStreamImpl implements EventCounter {
      */
     public long eventsByLastHour() {
         return this.events.entrySet().stream().filter(
-                entry -> entry.getKey() >= clock.getTime() / 1000L - 3600
+                entry -> entry.getKey() >= clock.getTime() / MILLIS_IN_SECOND - (SECONDS_IN_HOUR - 1)
         ).mapToLong(Map.Entry::getValue).reduce(0, (a, b) -> a + b);
     }
 
@@ -69,7 +74,7 @@ public class EventCounterStreamImpl implements EventCounter {
      */
     public long eventsByLastDay() {
         return this.events.entrySet().stream().filter(
-                entry -> entry.getKey() >= clock.getTime() / 1000L - 86400
+                entry -> entry.getKey() >= clock.getTime() / MILLIS_IN_SECOND - (SECONDS_IN_DAY - 1)
         ).mapToLong(Map.Entry::getValue).reduce(0, (a, b) -> a + b);
     }
 }

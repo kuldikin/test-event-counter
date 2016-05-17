@@ -18,9 +18,10 @@ public class EventCounterStreamImplTest extends TestCase {
         final EventCounter eventCounter = new EventCounterStreamImpl(clock);
         for (int i = 0; i < 620; i++) {
             eventCounter.countEvent();
-            clock.incClock(100L);
+            long incClock = clock.incClock(100L);
+            System.out.println("Stream " + i + " " + incClock + " " + eventCounter.eventsByLastMinute());
         }
-        assertEquals(600, eventCounter.eventsByLastMinute(), 10);
+        assertEquals(600, eventCounter.eventsByLastMinute());
         assertEquals(620, eventCounter.eventsByLastDay());
         assertEquals(620, eventCounter.eventsByLastHour());
     }
@@ -32,7 +33,7 @@ public class EventCounterStreamImplTest extends TestCase {
             eventCounter.countEvent();
             clock.incClock(100L);
         }
-        assertEquals(600, eventCounter.eventsByLastMinute(), 10);
+        assertEquals(600, eventCounter.eventsByLastMinute());
     }
 
     public void testEventsByLastHour() throws Exception {
@@ -69,7 +70,7 @@ public class EventCounterStreamImplTest extends TestCase {
 
     public void testFullDay() throws Exception {
         final Clock.CustomizableClock clock = new Clock.CustomizableClock();
-        final EventCounter eventCounter = new EventCounterCyclicBufferImpl(clock);
+        final EventCounter eventCounter = new EventCounterStreamImpl(clock);
 
         eventCounter.countEvent();
         eventCounter.countEvent();
@@ -110,4 +111,19 @@ public class EventCounterStreamImplTest extends TestCase {
         assertEquals("Через 1 день", 1, eventCounter.eventsByLastDay());
 
     }
+
+    public void testEventsByLastHourSkip() throws Exception {
+        final Clock.CustomizableClock clock = new Clock.CustomizableClock();
+        final EventCounter eventCounter = new EventCounterStreamImpl(clock);
+
+        for (int i = 0; i < 620; i++) {
+            eventCounter.countEvent();
+            clock.incClock(1000L * 60L);
+        }
+
+        assertEquals(0, eventCounter.eventsByLastMinute());
+        assertEquals(59, eventCounter.eventsByLastHour());
+        assertEquals(620, eventCounter.eventsByLastDay());
+    }
+    
 }

@@ -1,5 +1,8 @@
 package com.kuldikin.test.eventcounter;
 
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.LongAdder;
+
 /**
  *
  *
@@ -41,27 +44,27 @@ public abstract class Clock {
      */
     public static class CustomizableClock extends Clock {
 
-        private long time;
+        private AtomicLong time = new AtomicLong();
 
-        public CustomizableClock(long time) {
-            this.time = time;
+        public CustomizableClock(final long time) {
+            this.time.addAndGet(time);
         }
 
         public CustomizableClock() {
-            this.time = System.currentTimeMillis();
+            this(System.currentTimeMillis());
         }
 
         @Override
-        public synchronized long getTime() {
-            return time;
+        public long getTime() {
+            return time.longValue();
         }
 
-        public synchronized void incClock() {
-            time++;
+        public long incClock() {
+            return time.incrementAndGet();
         }
 
-        public synchronized void incClock(long inc) {
-            time = time + inc;
+        public long incClock(final long inc) {
+            return time.addAndGet(inc);
         }
 
     }

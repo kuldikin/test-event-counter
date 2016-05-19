@@ -42,7 +42,7 @@ public class EventCounterStreamImpl implements EventCounter {
     public void countEvent() {
         final long currentSecond = clock.getTime() / MILLIS_IN_SECOND;
         this.events.merge(currentSecond, 1L, (a, b) -> a + b);
-        this.events.entrySet().removeIf(entry -> entry.getKey() > currentSecond + SECONDS_IN_DAY);
+        this.events.entrySet().removeIf(entry -> entry.getKey() < currentSecond - SECONDS_IN_DAY);
     }
 
     /**

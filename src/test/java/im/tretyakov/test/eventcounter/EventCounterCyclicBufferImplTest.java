@@ -10,13 +10,22 @@ import junit.framework.TestCase;
  */
 public class EventCounterCyclicBufferImplTest extends TestCase {
 
+    /**
+     * Я специально делаю ровным значение милисекунд в часах. В данной реализации возможна погрешность
+     * в подсчёте событий случившихся за первую секунду диапозона. Если запросить события за последнюю минуту
+     * в момент времени X секунд и 123 милисекунды, то будут подсчитаны все события начиная с X - 59 секунд и 0 милисекунд
+     * Это происходит из-за того, время учитывается с точностью до секунды.
+     */
+    private final long currentTimeMillis = System.currentTimeMillis() / 1000 * 1000;
+
     public void testCountEvent() throws Exception {
-        final Clock.CustomizableClock clock = new Clock.CustomizableClock();
+        final Clock.CustomizableClock clock = new Clock.CustomizableClock(currentTimeMillis);
         final EventCounter eventCounter = new EventCounterCyclicBufferImpl(clock);
         for (int i = 0; i < 620; i++) {
             eventCounter.countEvent();
-            long incClock = clock.incClock(100L);
-            System.out.println("CycleB " + i + " " + incClock + " " + eventCounter.eventsByLastMinute());
+            if (i != 619) {
+                clock.incClock(100L);
+            }
         }
         assertEquals(600, eventCounter.eventsByLastMinute());
         assertEquals(620, eventCounter.eventsByLastDay());
@@ -24,11 +33,13 @@ public class EventCounterCyclicBufferImplTest extends TestCase {
     }
 
     public void testEventsByLastMinute() throws Exception {
-        final Clock.CustomizableClock clock = new Clock.CustomizableClock();
+        final Clock.CustomizableClock clock = new Clock.CustomizableClock(currentTimeMillis);
         final EventCounter eventCounter = new EventCounterCyclicBufferImpl(clock);
         for (int i = 0; i < 620; i++) {
             eventCounter.countEvent();
-            clock.incClock(100L);
+            if (i != 619) {
+                clock.incClock(100L);
+            }
         }
         assertEquals(600, eventCounter.eventsByLastMinute());
     }

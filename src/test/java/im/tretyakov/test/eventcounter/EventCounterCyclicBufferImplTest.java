@@ -120,7 +120,7 @@ public class EventCounterCyclicBufferImplTest extends TestCase {
 
     }
 
-    public void testEventsByLastHourSkip() throws Exception {
+    public void testSkip() throws Exception {
         final Clock.CustomizableClock clock = new Clock.CustomizableClock();
         final EventCounter eventCounter = new EventCounterCyclicBufferImpl(clock);
 

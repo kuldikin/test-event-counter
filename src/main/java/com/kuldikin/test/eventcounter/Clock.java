@@ -1,7 +1,6 @@
 package com.kuldikin.test.eventcounter;
 
 import java.util.concurrent.atomic.AtomicLong;
-import java.util.concurrent.atomic.LongAdder;
 
 /**
  *
@@ -56,7 +55,7 @@ public abstract class Clock {
 
         @Override
         public long getTime() {
-            return time.longValue();
+            return time.get();
         }
 
         public long incClock() {

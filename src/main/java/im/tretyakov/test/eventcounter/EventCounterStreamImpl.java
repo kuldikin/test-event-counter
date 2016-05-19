@@ -1,9 +1,9 @@
 package im.tretyakov.test.eventcounter;
 
 import com.kuldikin.test.eventcounter.Clock;
-import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.atomic.LongAdder;
 
 /**
  * Наивная реализация интерфейса для учета однотипных событий в системе с использованием потокобезопасной кучи и Stream API.
@@ -34,14 +34,14 @@ public class EventCounterStreamImpl implements EventCounter {
     }
 
     @SuppressWarnings("MismatchedQueryAndUpdateOfCollection")
-    private final ConcurrentMap<Long, Long> events = new ConcurrentHashMap<>();
+    private final ConcurrentMap<Long, LongAdder> events = new ConcurrentHashMap<>();
 
     /**
      * Учитывает событие
      */
     public void countEvent() {
         final long currentSecond = clock.getTime() / MILLIS_IN_SECOND;
-        this.events.merge(currentSecond, 1L, (a, b) -> a + b);
+        this.events.computeIfAbsent(currentSecond, k -> new LongAdder()).increment();
         this.events.entrySet().removeIf(entry -> entry.getKey() > currentSecond + SECONDS_IN_DAY);
     }
 
@@ -51,9 +51,10 @@ public class EventCounterStreamImpl implements EventCounter {
      * @return число событий за последнюю минуту (60 секунд)
      */
     public long eventsByLastMinute() {
+        final long curentTime = clock.getTime();
         return this.events.entrySet().stream().filter(
-                entry -> entry.getKey() >= clock.getTime() / MILLIS_IN_SECOND - (SECONDS_IN_MINUTE - 1)
-        ).mapToLong(Map.Entry::getValue).reduce(0, (a, b) -> a + b);
+                entry -> entry.getKey() >= curentTime / MILLIS_IN_SECOND - (SECONDS_IN_MINUTE - 1)
+        ).mapToLong(e -> e.getValue().sum()).reduce(0, (a, b) -> a + b);
     }
 
     /**
@@ -62,9 +63,10 @@ public class EventCounterStreamImpl implements EventCounter {
      * @return число событий за последний час (60 минут)
      */
     public long eventsByLastHour() {
+        final long curentTime = clock.getTime();
         return this.events.entrySet().stream().filter(
-                entry -> entry.getKey() >= clock.getTime() / MILLIS_IN_SECOND - (SECONDS_IN_HOUR - 1)
-        ).mapToLong(Map.Entry::getValue).reduce(0, (a, b) -> a + b);
+                entry -> entry.getKey() >= curentTime / MILLIS_IN_SECOND - (SECONDS_IN_HOUR - 1)
+        ).mapToLong(e -> e.getValue().sum()).reduce(0, (a, b) -> a + b);
     }
 
     /**
@@ -73,8 +75,9 @@ public class EventCounterStreamImpl implements EventCounter {
      * @return число событий за последние сутки (24 часа)
      */
     public long eventsByLastDay() {
+        final long curentTime = clock.getTime();
         return this.events.entrySet().stream().filter(
-                entry -> entry.getKey() >= clock.getTime() / MILLIS_IN_SECOND - (SECONDS_IN_DAY - 1)
-        ).mapToLong(Map.Entry::getValue).reduce(0, (a, b) -> a + b);
+                entry -> entry.getKey() >= curentTime / MILLIS_IN_SECOND - (SECONDS_IN_DAY - 1)
+        ).mapToLong(e -> e.getValue().sum()).reduce(0, (a, b) -> a + b);
     }
 }
